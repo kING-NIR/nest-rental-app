@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: nest-rental-backend
+    runtime: node
+    buildCommand: cd backend && npm install && npm run build
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: MONGODB_URI
+        value: ""
+      - key: JWT_SECRET
+        value: your-secret-key-change-me
+      - key: CORS_ORIGIN
+        value: https://nest-rental-frontend.onrender.com
+
+  - type: static
+    name: nest-rental-frontend
+    staticPublishPath: build
+    buildCommand: cd frontend && npm install && npm run build
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://nest-rental-backend.onrender.com/api
