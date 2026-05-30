@@ -1,11 +1,103 @@
 import { Response } from "express";
+import mongoose from "mongoose";
 import { AuthRequest } from "../middleware/auth";
 import { Task, Appointment, Payment, Message, Rental } from "../models/index";
+
+// Demo data
+const DEMO_TASKS = [
+  {
+    _id: "507f1f77bcf86cd799439051",
+    title: "Fix leaky bathroom faucet",
+    description: "Tenant reported water leakage from bathroom sink",
+    propertyId: "507f1f77bcf86cd799439021",
+    tenantId: "507f1f77bcf86cd799439012",
+    ownerId: "507f1f77bcf86cd799439011",
+    status: "open",
+    priority: "high",
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+    updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+  },
+  {
+    _id: "507f1f77bcf86cd799439052",
+    title: "Repair kitchen light",
+    description: "Main kitchen light is not turning on",
+    propertyId: "507f1f77bcf86cd799439021",
+    tenantId: "507f1f77bcf86cd799439012",
+    ownerId: "507f1f77bcf86cd799439011",
+    status: "in-progress",
+    priority: "medium",
+    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+    updatedAt: new Date(),
+  },
+];
+
+const DEMO_APPOINTMENTS = [
+  {
+    _id: "507f1f77bcf86cd799439061",
+    propertyId: "507f1f77bcf86cd799439021",
+    tenantId: "507f1f77bcf86cd799439012",
+    ownerId: "507f1f77bcf86cd799439011",
+    date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+    time: "10:00 AM",
+    status: "pending",
+    message: "Property viewing for new tenant",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+];
+
+const DEMO_PAYMENTS = [
+  {
+    _id: "507f1f77bcf86cd799439071",
+    propertyId: "507f1f77bcf86cd799439021",
+    tenantId: "507f1f77bcf86cd799439012",
+    ownerId: "507f1f77bcf86cd799439011",
+    amount: 50000,
+    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+    status: "pending",
+    description: "May 2026 Rent",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+];
+
+const DEMO_MESSAGES = [
+  {
+    _id: "507f1f77bcf86cd799439081",
+    senderId: "507f1f77bcf86cd799439012",
+    receiverId: "507f1f77bcf86cd799439011",
+    propertyId: "507f1f77bcf86cd799439021",
+    text: "Hi, I would like to schedule a viewing for your property",
+    createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
+  },
+  {
+    _id: "507f1f77bcf86cd799439082",
+    senderId: "507f1f77bcf86cd799439011",
+    receiverId: "507f1f77bcf86cd799439012",
+    propertyId: "507f1f77bcf86cd799439021",
+    text: "Sure! How about tomorrow at 10 AM?",
+    createdAt: new Date(Date.now() - 30 * 60 * 1000),
+  },
+];
+
+const isDBConnected = () => mongoose.connection.readyState === 1;
 
 // TASKS
 export const getTasks = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { propertyId } = req.query;
+    
+    if (!isDBConnected()) {
+      let filtered = [...DEMO_TASKS];
+      if (req.query.forOwner === "true") {
+        filtered = filtered.filter(t => t.ownerId === req.user?.id);
+      } else if (req.query.forTenant === "true") {
+        filtered = filtered.filter(t => t.tenantId === req.user?.id);
+      }
+      res.json(filtered);
+      return;
+    }
+
     const filter: any = {};
 
     if (propertyId) filter.propertyId = propertyId;
@@ -79,6 +171,17 @@ export const updateTask = async (req: AuthRequest, res: Response): Promise<void>
 // APPOINTMENTS
 export const getAppointments = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    if (!isDBConnected()) {
+      let filtered = [...DEMO_APPOINTMENTS];
+      if (req.query.forOwner === "true") {
+        filtered = filtered.filter(a => a.ownerId === req.user?.id);
+      } else if (req.query.forTenant === "true") {
+        filtered = filtered.filter(a => a.tenantId === req.user?.id);
+      }
+      res.json(filtered);
+      return;
+    }
+
     const filter: any = {};
 
     if (req.query.forOwner === "true") {
@@ -150,6 +253,17 @@ export const updateAppointment = async (req: AuthRequest, res: Response): Promis
 // PAYMENTS
 export const getPayments = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    if (!isDBConnected()) {
+      let filtered = [...DEMO_PAYMENTS];
+      if (req.query.forOwner === "true") {
+        filtered = filtered.filter(p => p.ownerId === req.user?.id);
+      } else if (req.query.forTenant === "true") {
+        filtered = filtered.filter(p => p.tenantId === req.user?.id);
+      }
+      res.json(filtered);
+      return;
+    }
+
     const filter: any = {};
 
     if (req.query.forOwner === "true") {
@@ -192,6 +306,15 @@ export const recordPayment = async (req: AuthRequest, res: Response): Promise<vo
 export const getMessages = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { recipientId } = req.query;
+
+    if (!isDBConnected()) {
+      const filtered = DEMO_MESSAGES.filter(m => 
+        (m.senderId === req.user?.id && m.receiverId === recipientId) ||
+        (m.senderId === recipientId && m.receiverId === req.user?.id)
+      );
+      res.json(filtered);
+      return;
+    }
 
     const messages = await Message.find({
       $or: [
