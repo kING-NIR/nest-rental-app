@@ -1,0 +1,30 @@
+export const THEME = {
+  bg: "#070710",
+  surface: "#0D0D1A",
+  card: "#121225",
+  elevated: "#1A1A30",
+  border: "rgba(255,255,255,0.07)",
+  borderHov: "rgba(255,255,255,0.14)",
+  gold: "#C9A84C",
+  goldLight: "#E8C97A",
+  goldDim: "rgba(201,168,76,0.12)",
+  text: "#F0EEff",
+  textSec: "#8080AA",
+  textMuted: "#444465",
+  success: "#4DB87A",
+  successDim: "rgba(77,184,122,0.12)",
+  error: "#E05555",
+  errorDim: "rgba(224,85,85,0.12)",
+  warning: "#E8A84C",
+  warningDim: "rgba(232,168,76,0.12)",
+  info: "#5A9FE0",
+  infoDim: "rgba(90,159,224,0.12)",
+};
+
+export const PROP_GRADIENTS = [
+  "linear-gradient(145deg,#1a1040 0%,#2d1b6e 55%,#0f2460 100%)",
+  "linear-gradient(145deg,#0d2618 0%,#1a4a35 55%,#0a3025 100%)",
+  "linear-gradient(145deg,#0d0d22 0%,#1a1a45 55%,#221560 100%)",
+  "linear-gradient(145deg,#2a0a18 0%,#4a1530 55%,#38082a 100%)",
+  "linear-gradient(145deg,#0a1a2a 0%,#153a5a 55%,#0a2535 100%)",
+];
